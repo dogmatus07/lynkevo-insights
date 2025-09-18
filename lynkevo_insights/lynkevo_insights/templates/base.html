@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lynkevo Insights</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <a href="{% url 'dashboard:kpi_overview' %}" class="navbar-brand">Lynkevo Insights</a>
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li class="nav-item"><a href="{% url 'dashboard:kpi_overview' %}" class="nav-link">Dashboard</a></li>
+                    <li class="nav-item"><a href="{% url 'reports:report_list' %}" class="nav-link">Reports</a></li>
+                    <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link">Logout</a></li>
+                {% else %}
+                    <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer class="footer">
+        <p>&copy; 2025 Lynkevo - All Rights Reserved</p>
+    </footer>
+</body>
+</html>
