@@ -1,13 +1,245 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block content %}
-<h1>Create a new KPI Report </h1>
-<form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-<button type="submit" class="btn btn-primary">Save</button>
-</form>
 
-<a href="{% url 'kpi_overview' %}">Back to KPI Overview</a>
-<p style="opacity: 0.7">Note : pour les durées, utiliser le format HH:MM:SS. Ex. : 01:30:00</p>
+{% block title %}Create KPI Report - Lynkevo Insights{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="page-header">
+        <h1>Create New KPI Report</h1>
+        <div class="page-actions">
+            <a href="{% url 'dashboard:kpi_overview' %}" class="btn btn-secondary">
+                ← Back to Overview
+            </a>
+        </div>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" class="kpi-form">
+            {% csrf_token %}
+            
+            <!-- Client and Period Selection -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.client.id_for_label }}">Client *</label>
+                    {{ form.client }}
+                    {% if form.client.errors %}
+                        <div class="field-error">{{ form.client.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.period.id_for_label }}">Report Period *</label>
+                    {{ form.period }}
+                    {% if form.period.errors %}
+                        <div class="field-error">{{ form.period.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Date Range -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.period_start.id_for_label }}">Start Date *</label>
+                    {{ form.period_start }}
+                    {% if form.period_start.errors %}
+                        <div class="field-error">{{ form.period_start.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.period_end.id_for_label }}">End Date *</label>
+                    {{ form.period_end }}
+                    {% if form.period_end.errors %}
+                        <div class="field-error">{{ form.period_end.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ticket Metrics -->
+            <fieldset class="form-section">
+                <legend>Ticket Metrics</legend>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.tickets_received.id_for_label }}">Tickets Received</label>
+                        {{ form.tickets_received }}
+                        <small class="help-text">Total number of tickets received during this period</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.tickets_resolved.id_for_label }}">Tickets Resolved</label>
+                        {{ form.tickets_resolved }}
+                        <small class="help-text">Number of tickets successfully resolved</small>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Response Time Metrics -->
+            <fieldset class="form-section">
+                <legend>Response Time Metrics</legend>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.first_reply_time_avg.id_for_label }}">Average First Reply Time</label>
+                        {{ form.first_reply_time_avg }}
+                        <small class="help-text">Format: HH:MM:SS (e.g., 01:30:00 for 1 hour 30 minutes)</small>
+                        {% if form.first_reply_time_avg.errors %}
+                            <div class="field-error">{{ form.first_reply_time_avg.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.resolution_time_avg.id_for_label }}">Average Resolution Time</label>
+                        {{ form.resolution_time_avg }}
+                        <small class="help-text">Format: HH:MM:SS (e.g., 24:00:00 for 24 hours)</small>
+                        {% if form.resolution_time_avg.errors %}
+                            <div class="field-error">{{ form.resolution_time_avg.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Customer Satisfaction & Financial -->
+            <fieldset class="form-section">
+                <legend>Customer Satisfaction & Financial Metrics</legend>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.csat.id_for_label }}">CSAT Score (%)</label>
+                        {{ form.csat }}
+                        <small class="help-text">Customer satisfaction percentage (0-100)</small>
+                        {% if form.csat.errors %}
+                            <div class="field-error">{{ form.csat.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.refunds.id_for_label }}">Refunds Processed</label>
+                        {{ form.refunds }}
+                        <small class="help-text">Total number of refunds issued</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.chargebacks_opened.id_for_label }}">Chargebacks Opened</label>
+                        {{ form.chargebacks_opened }}
+                        <small class="help-text">New chargebacks initiated during this period</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.chargebacks_processed.id_for_label }}">Chargebacks Processed</label>
+                        {{ form.chargebacks_processed }}
+                        <small class="help-text">Chargebacks resolved or handled</small>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Tags & Additional Info -->
+            <fieldset class="form-section">
+                <legend>Categorization & Notes</legend>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.tag.id_for_label }}">Primary Tag</label>
+                        {{ form.tag }}
+                        <small class="help-text">Main category for this report period</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.tag_details.id_for_label }}">Tag Details</label>
+                        {{ form.tag_details }}
+                        <small class="help-text">Specific details about the selected tag</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.notes.id_for_label }}">Additional Notes</label>
+                    {{ form.notes }}
+                    <small class="help-text">Any additional observations or context for this reporting period</small>
+                </div>
+            </fieldset>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    Save KPI Report
+                </button>
+                <a href="{% url 'dashboard:kpi_overview' %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* Additional form-specific styles */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-4);
+    margin-bottom: var(--spacing-5);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-section {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: var(--spacing-6);
+    margin-bottom: var(--spacing-6);
+    background-color: var(--gray-50);
+}
+
+.form-section legend {
+    font-weight: 600;
+    color: var(--gray-700);
+    padding: 0 var(--spacing-3);
+    font-size: var(--font-size-lg);
+}
+
+.help-text {
+    color: var(--gray-500);
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-1);
+    display: block;
+}
+
+.field-error {
+    color: var(--danger-color);
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-1);
+    font-weight: 500;
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--spacing-3);
+    justify-content: flex-end;
+    padding-top: var(--spacing-6);
+    border-top: 1px solid var(--gray-200);
+}
+
+/* Make form inputs consistent */
+.kpi-form input, .kpi-form select, .kpi-form textarea {
+    width: 100%;
+    padding: var(--spacing-3);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+}
+
+.kpi-form input:focus, .kpi-form select:focus, .kpi-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+</style>
 {% endblock %}

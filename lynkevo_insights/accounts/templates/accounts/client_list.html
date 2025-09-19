@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Client Management - Lynkevo Insights{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Client Management</h1>
+    <div class="page-actions">
+        <a href="{% url 'accounts:client_create' %}" class="btn btn-primary btn-lg">
+            ➕ Add New Client
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Dashboard -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-icon">🏢</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ stats.total_clients }}</div>
+            <div class="metric-label">Total Clients</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">✅</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ stats.active_clients }}</div>
+            <div class="metric-label">Active Clients</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ stats.total_reports }}</div>
+            <div class="metric-label">Total Reports</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">⏸️</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ stats.inactive_clients }}</div>
+            <div class="metric-label">Inactive Clients</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="glass-card">
+    <form method="get" class="search-form">
+        <div class="search-input-group">
+            <input 
+                type="text" 
+                name="search" 
+                value="{{ search_query }}" 
+                placeholder="Search clients by name or email..."
+                class="form-control search-input"
+                autocomplete="off"
+            >
+            <button type="submit" class="btn btn-primary search-btn">
+                🔍 Search
+            </button>
+            {% if search_query %}
+            <a href="{% url 'accounts:client_list' %}" class="btn btn-secondary">
+                ❌ Clear
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Clients Grid -->
+{% if clients %}
+<div class="clients-grid">
+    {% for client in clients %}
+    <div class="client-card glass-card">
+        <div class="client-header">
+            <h3 class="client-name">{{ client.name }}</h3>
+            <div class="client-status">
+                {% if client.reports_count > 0 %}
+                <span class="status-badge status-success">Active</span>
+                {% else %}
+                <span class="status-badge status-warning">Inactive</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="client-info">
+            {% if client.contact_email %}
+            <div class="info-item">
+                <span class="info-icon">📧</span>
+                <span class="info-text">{{ client.contact_email }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="info-item">
+                <span class="info-icon">📅</span>
+                <span class="info-text">Created {{ client.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+        
+        <div class="client-metrics">
+            <div class="metric-item">
+                <span class="metric-number">{{ client.reports_count }}</span>
+                <span class="metric-text">Reports</span>
+            </div>
+            <div class="metric-item">
+                <span class="metric-number">{{ client.users_count }}</span>
+                <span class="metric-text">Users</span>
+            </div>
+        </div>
+        
+        <div class="client-actions">
+            <a href="{% url 'accounts:client_detail' client.pk %}" class="btn btn-primary btn-sm">
+                👁️ View Details
+            </a>
+            <a href="{% url 'accounts:client_edit' client.pk %}" class="btn btn-secondary btn-sm">
+                ✏️ Edit
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if clients.has_other_pages %}
+<div class="pagination-container">
+    <div class="pagination glass-card">
+        {% if clients.has_previous %}
+            <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary btn-sm">
+                ⏮️ First
+            </a>
+            <a href="?page={{ clients.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary btn-sm">
+                ⬅️ Previous
+            </a>
+        {% endif %}
+        
+        <span class="pagination-info">
+            Page {{ clients.number }} of {{ clients.paginator.num_pages }}
+        </span>
+        
+        {% if clients.has_next %}
+            <a href="?page={{ clients.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary btn-sm">
+                Next ➡️
+            </a>
+            <a href="?page={{ clients.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary btn-sm">
+                Last ⏭️
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<!-- Empty State -->
+<div class="empty-state glass-card">
+    <div class="empty-state-icon">🏢</div>
+    <h3 class="empty-state-title">
+        {% if search_query %}
+            No clients found for "{{ search_query }}"
+        {% else %}
+            No clients yet
+        {% endif %}
+    </h3>
+    <p class="empty-state-text">
+        {% if search_query %}
+            Try adjusting your search terms or create a new client.
+        {% else %}
+            Get started by creating your first client.
+        {% endif %}
+    </p>
+    <a href="{% url 'accounts:client_create' %}" class="btn btn-primary">
+        ➕ Create First Client
+    </a>
+</div>
+{% endif %}
+
+<style>
+/* Client-specific styles */
+.search-form {
+    margin-bottom: var(--space-6);
+}
+
+.search-input-group {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    flex: 1;
+    min-width: 300px;
+}
+
+.clients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
+}
+
+.client-card {
+    padding: var(--space-6);
+    transition: all 0.3s ease;
+    border: 1px solid var(--glass-border);
+}
+
+.client-card:hover {
+    transform: translateY(-8px) scale(1.02);
+}
+
+.client-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-4);
+}
+
+.client-name {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.2;
+}
+
+.client-info {
+    margin-bottom: var(--space-6);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.info-icon {
+    opacity: 0.7;
+}
+
+.client-metrics {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: var(--space-6);
+    padding: var(--space-4) 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.metric-item {
+    text-align: center;
+}
+
+.metric-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1;
+}
+
+.metric-text {
+    display: block;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.client-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.client-actions .btn {
+    flex: 1;
+}
+
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-8);
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+}
+
+.pagination-info {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+    margin: 0 var(--space-4);
+}
+
+@media (max-width: 768px) {
+    
+    .search-input-group {
+        flex-direction: column;
+    }
+    
+    .search-input {
+        min-width: auto;
+    }
+    
+    .client-actions {
+        flex-direction: column;
+    }
+    
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

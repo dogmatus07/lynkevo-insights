@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Supervisor Dashboard - Lynkevo Insights{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Supervisor Dashboard</h1>
+    <div class="page-actions">
+        <a href="{% url 'accounts:client_create' %}" class="btn btn-primary">
+            Add New Client
+        </a>
+        <a href="{% url 'dashboard:kpi_create' %}" class="btn btn-secondary">
+            Create Report
+        </a>
+    </div>
+</div>
+
+<!-- Key Metrics Overview -->
+<div class="metrics-grid supervisor-metrics">
+    <div class="metric-card">
+        <div class="metric-icon">🏢</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ stats.total_clients }}</div>
+            <div class="metric-label">Total Clients</div>
+            <div class="metric-change positive">+2 this month</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ stats.total_reports }}</div>
+            <div class="metric-label">Total Reports</div>
+            <div class="metric-change positive">+15 this week</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">✅</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ stats.active_clients }}</div>
+            <div class="metric-label">Active Clients</div>
+            <div class="metric-change">{{ stats.active_clients }}/{{ stats.total_clients }}</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">👥</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ stats.total_users|default:0 }}</div>
+            <div class="metric-label">Team Members</div>
+            <div class="metric-change">Across all clients</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Panel -->
+<div class="glass-card quick-actions-panel">
+    <h3 class="section-title">Quick Actions</h3>
+    <div class="quick-actions-grid">
+        <a href="{% url 'accounts:client_list' %}" class="action-card">
+            <div class="action-icon">🏢</div>
+            <div class="action-content">
+                <h4>Manage Clients</h4>
+                <p>Add, edit, and view client information</p>
+            </div>
+        </a>
+        
+        <a href="{% url 'accounts:user_management' %}" class="action-card">
+            <div class="action-icon">👥</div>
+            <div class="action-content">
+                <h4>User Management</h4>
+                <p>Manage team members and permissions</p>
+            </div>
+        </a>
+        
+        <a href="{% url 'dashboard:analytics' %}" class="action-card">
+            <div class="action-icon">📊</div>
+            <div class="action-content">
+                <h4>View Analytics</h4>
+                <p>Comprehensive performance insights</p>
+            </div>
+        </a>
+        
+        <a href="{% url 'dashboard:kpi_create' %}" class="action-card">
+            <div class="action-icon">📝</div>
+            <div class="action-content">
+                <h4>Create Report</h4>
+                <p>Add new KPI report for any client</p>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="activity-section">
+    <div class="glass-card recent-reports">
+        <div class="section-header">
+            <h3 class="section-title">Recent Reports</h3>
+            <a href="{% url 'dashboard:kpi_overview' %}" class="btn btn-secondary btn-sm">
+                View All Reports
+            </a>
+        </div>
+        
+        {% if recent_reports %}
+            <div class="reports-timeline">
+                {% for report in recent_reports %}
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="report-header">
+                            <h4>{{ report.client.name }}</h4>
+                            <span class="report-period">{{ report.get_period_display }}</span>
+                        </div>
+                        <div class="report-summary">
+                            <span class="metric-badge">{{ report.tickets_received }} tickets</span>
+                            <span class="metric-badge">{{ report.tickets_resolved }} resolved</span>
+                            {% if report.csat %}
+                                <span class="metric-badge">{{ report.csat }}% CSAT</span>
+                            {% endif %}
+                        </div>
+                        <div class="report-date">
+                            {{ report.period_start|date:"M d" }} - {{ report.period_end|date:"M d, Y" }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state-small">
+                <div class="empty-icon">📊</div>
+                <p>No reports created yet</p>
+                <a href="{% url 'dashboard:kpi_create' %}" class="btn btn-primary btn-sm">
+                    Create First Report
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- System Status -->
+<div class="glass-card system-status">
+    <h3 class="section-title">System Overview</h3>
+    <div class="status-grid">
+        <div class="status-item">
+            <div class="status-indicator active"></div>
+            <div class="status-content">
+                <h4>System Health</h4>
+                <p>All services operational</p>
+            </div>
+        </div>
+        
+        <div class="status-item">
+            <div class="status-indicator active"></div>
+            <div class="status-content">
+                <h4>Data Sync</h4>
+                <p>Last updated 2 minutes ago</p>
+            </div>
+        </div>
+        
+        <div class="status-item">
+            <div class="status-indicator active"></div>
+            <div class="status-content">
+                <h4>Performance</h4>
+                <p>Response time: 0.8s avg</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.supervisor-metrics .metric-card {
+    background: linear-gradient(135deg, var(--glass-bg) 0%, rgba(255, 255, 255, 0.15) 100%);
+}
+
+.metric-change {
+    font-size: 0.75rem;
+    margin-top: var(--space-1);
+    opacity: 0.8;
+}
+
+.metric-change.positive {
+    color: var(--success-color);
+}
+
+.quick-actions-panel {
+    margin-bottom: var(--space-8);
+}
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-4);
+}
+
+.action-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--white);
+    transition: all 0.3s ease;
+}
+
+.action-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-4px);
+    text-decoration: none;
+    color: var(--white);
+}
+
+.action-icon {
+    font-size: 2rem;
+    opacity: 0.9;
+}
+
+.action-content h4 {
+    margin: 0 0 var(--space-1) 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--white);
+}
+
+.action-content p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.4;
+}
+
+.activity-section {
+    margin-bottom: var(--space-8);
+}
+
+.reports-timeline {
+    position: relative;
+}
+
+.reports-timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary-color), transparent);
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: var(--space-8);
+    margin-bottom: var(--space-6);
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    border: 3px solid rgba(102, 126, 234, 0.3);
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.timeline-content {
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+}
+
+.report-header h4 {
+    margin: 0;
+    color: var(--white);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.report-period {
+    font-size: 0.75rem;
+    padding: var(--space-1) var(--space-2);
+    background: var(--gradient-primary);
+    border-radius: var(--radius-sm);
+    color: var(--white);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.report-summary {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.metric-badge {
+    font-size: 0.75rem;
+    padding: var(--space-1) var(--space-2);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.report-date {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.system-status {
+    margin-bottom: var(--space-8);
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-indicator.active {
+    background: var(--success-color);
+    box-shadow: 0 0 10px rgba(16, 242, 254, 0.5);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(16, 242, 254, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(16, 242, 254, 0.8);
+    }
+}
+
+.status-content h4 {
+    margin: 0 0 var(--space-1) 0;
+    color: var(--white);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.status-content p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-card {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-3);
+    }
+    
+    .status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .reports-timeline::before {
+        display: none;
+    }
+    
+    .timeline-item {
+        padding-left: 0;
+    }
+    
+    .timeline-marker {
+        display: none;
+    }
+}
+</style>
+{% endblock %}

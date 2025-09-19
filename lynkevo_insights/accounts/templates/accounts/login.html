@@ -1,10 +1,144 @@
 {% extends "base.html" %}
 {% load static %}
+
+{% block title %}Login - Lynkevo Insights{% endblock %}
+
 {% block content %}
-<h2>Login</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Sign In</button>
-</form>
+<div class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-icon">📊</div>
+            <h1>Welcome Back</h1>
+            <p>Sign in to your Lynkevo Insights account</p>
+        </div>
+
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert danger">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">Username</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="field-error">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">Password</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                    <div class="field-error">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">
+                Sign In
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p>Don't have an account? Contact your administrator</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.login-page {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-4);
+}
+
+.login-container {
+    background: white;
+    padding: var(--spacing-8);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--gray-200);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: var(--spacing-8);
+}
+
+.login-icon {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-4);
+}
+
+.login-header h1 {
+    margin-bottom: var(--spacing-2);
+    color: var(--gray-900);
+}
+
+.login-header p {
+    color: var(--gray-600);
+    margin: 0;
+}
+
+.login-form .form-group {
+    margin-bottom: var(--spacing-5);
+}
+
+.login-form label {
+    display: block;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-2);
+}
+
+.login-form input {
+    width: 100%;
+    padding: var(--spacing-4);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: var(--font-size-base);
+    transition: all 0.2s ease;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-full {
+    width: 100%;
+    padding: var(--spacing-4);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    margin-top: var(--spacing-2);
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: var(--spacing-6);
+    padding-top: var(--spacing-6);
+    border-top: 1px solid var(--gray-200);
+}
+
+.login-footer p {
+    color: var(--gray-500);
+    font-size: var(--font-size-sm);
+    margin: 0;
+}
+
+.field-error {
+    color: var(--danger-color);
+    font-size: var(--font-size-xs);
+    margin-top: var(--spacing-1);
+    font-weight: 500;
+}
+</style>
 {% endblock %}

@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ client.name }} - Client Details{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="client-title-section">
+        <h1 class="page-title">{{ client.name }}</h1>
+        <div class="client-status-info">
+            {% if metrics.total_reports > 0 %}
+                <span class="status-badge status-success">Active Client</span>
+            {% else %}
+                <span class="status-badge status-warning">Inactive</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:add_user_to_client' client.pk %}" class="btn btn-secondary">
+            👥 Add User
+        </a>
+        <a href="{% url 'accounts:client_edit' client.pk %}" class="btn btn-primary">
+            ✏️ Edit Client
+        </a>
+    </div>
+</div>
+
+<!-- Client Information Card -->
+<div class="glass-card client-info-card">
+    <h3 class="section-title">Client Information</h3>
+    <div class="client-details-grid">
+        <div class="detail-item">
+            <span class="detail-label">Contact Email</span>
+            <span class="detail-value">{{ client.contact_email|default:"Not provided" }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Slug</span>
+            <span class="detail-value font-mono">{{ client.slug }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Created</span>
+            <span class="detail-value">{{ client.created_at|date:"F d, Y" }}</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Last Updated</span>
+            <span class="detail-value">{{ client.updated_at|date:"F d, Y" }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Metrics -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-icon">📊</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ metrics.total_reports }}</div>
+            <div class="metric-label">Total Reports</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">🎫</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ metrics.total_tickets_received|default:0 }}</div>
+            <div class="metric-label">Tickets Received</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">✅</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ metrics.total_tickets_resolved|default:0 }}</div>
+            <div class="metric-label">Tickets Resolved</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">📈</div>
+        <div class="metric-content">
+            <div class="metric-value">
+                {% if metrics.resolution_rate %}
+                    {{ metrics.resolution_rate|floatformat:1 }}%
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="metric-label">Resolution Rate</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">⭐</div>
+        <div class="metric-content">
+            <div class="metric-value">
+                {% if metrics.avg_csat %}
+                    {{ metrics.avg_csat|floatformat:1 }}%
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="metric-label">Average CSAT</div>
+        </div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-icon">👥</div>
+        <div class="metric-content">
+            <div class="metric-value">{{ memberships.count }}</div>
+            <div class="metric-label">Team Members</div>
+        </div>
+    </div>
+</div>
+
+<!-- Two Column Layout -->
+<div class="detail-grid">
+    <!-- Recent Reports -->
+    <div class="glass-card">
+        <div class="section-header">
+            <h3 class="section-title">Recent Reports</h3>
+            <a href="{% url 'dashboard:kpi_overview' %}?client={{ client.slug }}" class="btn btn-secondary btn-sm">
+                View All
+            </a>
+        </div>
+        
+        {% if recent_reports %}
+            <div class="reports-list">
+                {% for report in recent_reports %}
+                <div class="report-item">
+                    <div class="report-info">
+                        <div class="report-period">
+                            <span class="status-badge status-{% if report.period == 'weekly' %}success{% else %}warning{% endif %}">
+                                {{ report.get_period_display }}
+                            </span>
+                        </div>
+                        <div class="report-date">
+                            {{ report.period_start|date:"M d" }} - {{ report.period_end|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    <div class="report-metrics">
+                        <span class="metric-small">{{ report.tickets_received }} received</span>
+                        <span class="metric-small">{{ report.tickets_resolved }} resolved</span>
+                        {% if report.csat %}
+                            <span class="metric-small">{{ report.csat }}% CSAT</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state-small">
+                <div class="empty-icon">📊</div>
+                <p>No reports yet</p>
+                <a href="{% url 'dashboard:kpi_create' %}" class="btn btn-primary btn-sm">
+                    Create First Report
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Team Members -->
+    <div class="glass-card">
+        <div class="section-header">
+            <h3 class="section-title">Team Members</h3>
+            <a href="{% url 'accounts:add_user_to_client' client.pk %}" class="btn btn-secondary btn-sm">
+                Add Member
+            </a>
+        </div>
+        
+        {% if memberships %}
+            <div class="members-list">
+                {% for membership in memberships %}
+                <div class="member-item">
+                    <div class="member-avatar">
+                        {{ membership.user.username|slice:":1"|upper }}
+                    </div>
+                    <div class="member-info">
+                        <div class="member-name">
+                            {{ membership.user.get_full_name|default:membership.user.username }}
+                        </div>
+                        <div class="member-role">
+                            <span class="role-badge role-{{ membership.role }}">
+                                {{ membership.get_role_display }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="member-status">
+                        {% if membership.user.is_active %}
+                            <span class="status-indicator active" title="Active"></span>
+                        {% else %}
+                            <span class="status-indicator inactive" title="Inactive"></span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state-small">
+                <div class="empty-icon">👥</div>
+                <p>No team members assigned</p>
+                <a href="{% url 'accounts:add_user_to_client' client.pk %}" class="btn btn-primary btn-sm">
+                    Add First Member
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Danger Zone -->
+<div class="glass-card danger-zone">
+    <h3 class="section-title text-danger">Danger Zone</h3>
+    <p class="text-muted">These actions cannot be undone. Please be careful.</p>
+    <div class="danger-actions">
+        <a href="{% url 'accounts:client_delete' client.pk %}" 
+           class="btn btn-danger"
+           onclick="return confirm('Are you sure you want to delete {{ client.name }}? This action cannot be undone.')">
+            🗑️ Delete Client
+        </a>
+    </div>
+</div>
+
+<style>
+.client-title-section {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.client-info-card {
+    margin-bottom: var(--space-8);
+}
+
+.section-title {
+    margin: 0 0 var(--space-4) 0;
+    color: var(--white);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+}
+
+.client-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-4);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.detail-label {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.detail-value {
+    color: var(--white);
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
+}
+
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.report-item {
+    padding: var(--space-4);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.report-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
+}
+
+.report-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.report-date {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+}
+
+.report-metrics {
+    display: flex;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.metric-small {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.1);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+}
+
+.members-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--white);
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-name {
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: var(--space-1);
+}
+
+.role-badge {
+    font-size: 0.75rem;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.role-owner {
+    background: rgba(250, 112, 154, 0.2);
+    color: var(--danger-color);
+}
+
+.role-editor {
+    background: rgba(56, 249, 215, 0.2);
+    color: var(--warning-color);
+}
+
+.role-viewer {
+    background: rgba(16, 242, 254, 0.2);
+    color: var(--success-color);
+}
+
+.member-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-indicator.active {
+    background: var(--success-color);
+    box-shadow: 0 0 6px var(--success-color);
+}
+
+.status-indicator.inactive {
+    background: var(--gray-500);
+}
+
+.empty-state-small {
+    text-align: center;
+    padding: var(--space-8);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.empty-icon {
+    font-size: 2rem;
+    margin-bottom: var(--space-3);
+    opacity: 0.5;
+}
+
+.danger-zone {
+    border: 1px solid rgba(250, 112, 154, 0.3);
+    background: rgba(250, 112, 154, 0.05);
+}
+
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+.danger-actions {
+    margin-top: var(--space-4);
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+    
+    .client-title-section {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .client-details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .report-metrics {
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

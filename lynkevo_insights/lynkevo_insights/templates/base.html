@@ -3,39 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lynkevo Insights</title>
+    <title>{% block title %}Lynkevo Insights{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>📊</text></svg>">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/static/css/app.css">
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Professional KPI reporting and analytics dashboard">
+    <meta name="author" content="Lynkevo">
+    <meta name="theme-color" content="#667eea">
+    
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <a href="{% url 'dashboard:kpi_overview' %}" class="navbar-brand">Lynkevo Insights</a>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="{% url 'dashboard:kpi_overview' %}" class="navbar-brand">
+                <span style="font-size: 1.8rem;">📊</span>
+                Lynkevo Insights
+            </a>
+            
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
-                    <li class="nav-item"><a href="{% url 'dashboard:kpi_overview' %}" class="nav-link">Dashboard</a></li>
-                    <li class="nav-item"><a href="{% url 'reports:report_overview' %}" class="nav-link">Reports</a></li>
-                    <li class="nav-item"><a href="{% url 'accounts:logout' %}" class="nav-link">Logout</a></li>
+                    <li class="nav-item">
+                        <a href="{% url 'dashboard:kpi_overview' %}" class="nav-link">
+                            📈 Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'dashboard:analytics' %}" class="nav-link">
+                            📊 Analytics
+                        </a>
+                    </li>
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a href="{% url 'accounts:client_list' %}" class="nav-link">
+                            🏢 Clients
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'accounts:user_management' %}" class="nav-link">
+                            👥 Users
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a href="{% url 'reports:report_overview' %}" class="nav-link">
+                            📋 Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link" style="opacity: 0.9; cursor: default;">
+                            👤 {{ user.get_full_name|default:user.username }}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'accounts:logout' %}" class="nav-link">
+                            🚪 Logout
+                        </a>
+                    </li>
                 {% else %}
-                    <li class="nav-item"><a href="{% url 'accounts:login' %}" class="nav-link">Login</a></li>
+                    <li class="nav-item">
+                        <a href="{% url 'accounts:login' %}" class="nav-link">
+                            🔑 Login
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
-        </nav>
-    </header>
+        </div>
+    </nav>
 
+    <!-- Messages -->
     {% if messages %}
         <div class="messages">
             {% for message in messages %}
-                <div class="alert {{ message.tags }}">{{ message }}</div>
+                <div class="alert alert-{{ message.tags }}" onclick="this.remove()">
+                    {% if message.tags == 'success' %}🎉{% elif message.tags == 'error' %}❌{% elif message.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+                    {{ message }}
+                </div>
             {% endfor %}
         </div>
     {% endif %}
     
+    <!-- Main Content -->
     <main class="container">
         {% block content %}
         {% endblock %}
     </main>
+    
+    <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2025 Lynkevo - All Rights Reserved</p>
+        <div class="footer-content">
+            <p>&copy; 2025 Lynkevo Insights - Professional KPI Analytics Platform</p>
+        </div>
     </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        // Enhanced JavaScript with liquid animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide messages with smooth animation
+            const messages = document.querySelectorAll('.alert');
+            messages.forEach(function(message) {
+                message.style.cursor = 'pointer';
+                message.title = 'Click to dismiss';
+                
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateX(100%)';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 300);
+                }, 5000);
+            });
+            
+            // Add ripple effect to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const rect = button.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    const ripple = document.createElement('div');
+                    ripple.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}px;
+                        top: ${y}px;
+                        background: rgba(255, 255, 255, 0.3);
+                        border-radius: 50%;
+                        transform: scale(0);
+                        animation: ripple 0.6s linear;
+                        pointer-events: none;
+                    `;
+                    
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        @keyframes ripple {
+                            to {
+                                transform: scale(2);
+                                opacity: 0;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    button.style.position = 'relative';
+                    button.style.overflow = 'hidden';
+                    button.appendChild(ripple);
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+            
+            // Loading state management
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('loading');
+                        const originalText = submitBtn.textContent;
+                        submitBtn.textContent = 'Loading...';
+                        
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('loading');
+                            submitBtn.textContent = originalText;
+                        }, 3000);
+                    }
+                });
+            });
+        });
+
+        // Glass morphism hover effects
+        function addGlassHoverEffect() {
+            const glassElements = document.querySelectorAll('.glass-card, .metric-card');
+            glassElements.forEach(element => {
+                element.addEventListener('mousemove', function(e) {
+                    const rect = element.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    element.style.setProperty('--mouse-x', x + 'px');
+                    element.style.setProperty('--mouse-y', y + 'px');
+                });
+            });
+        }
+        
+        // Initialize glass effects after DOM load
+        document.addEventListener('DOMContentLoaded', addGlassHoverEffect);
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

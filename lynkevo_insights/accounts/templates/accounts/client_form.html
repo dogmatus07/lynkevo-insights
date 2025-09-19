@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Lynkevo Insights{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{{ title }}</h1>
+    <div class="page-actions">
+        {% if client %}
+            <a href="{% url 'accounts:client_detail' client.pk %}" class="btn btn-secondary">
+                ← Back to Details
+            </a>
+        {% else %}
+            <a href="{% url 'accounts:client_list' %}" class="btn btn-secondary">
+                ← Back to Clients
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="form-container">
+    <div class="glass-card form-card">
+        <form method="POST" class="client-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <div class="form-section">
+                <h3 class="section-title">Basic Information</h3>
+                
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}" class="form-label required">
+                        Client Name
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="field-error">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                    <small class="help-text">
+                        The official name of the client company or organization
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.contact_email.id_for_label }}" class="form-label">
+                        Contact Email
+                    </label>
+                    {{ form.contact_email }}
+                    {% if form.contact_email.errors %}
+                        <div class="field-error">{{ form.contact_email.errors.0 }}</div>
+                    {% endif %}
+                    <small class="help-text">
+                        Primary contact email for this client (optional)
+                    </small>
+                </div>
+
+                {% if client %}
+                <div class="form-group">
+                    <label class="form-label">URL Slug</label>
+                    <div class="readonly-field">{{ client.slug }}</div>
+                    <small class="help-text">
+                        Auto-generated URL identifier (cannot be changed)
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    {% if client %}
+                        💾 Update Client
+                    {% else %}
+                        ✨ Create Client
+                    {% endif %}
+                </button>
+                {% if client %}
+                    <a href="{% url 'accounts:client_detail' client.pk %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:client_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+
+        {% if client %}
+        <!-- Additional Actions for Existing Client -->
+        <div class="additional-actions">
+            <h3 class="section-title">Quick Actions</h3>
+            <div class="action-buttons">
+                <a href="{% url 'accounts:add_user_to_client' client.pk %}" class="btn btn-success">
+                    👥 Add Team Member
+                </a>
+                <a href="{% url 'dashboard:kpi_create' %}?client={{ client.slug }}" class="btn btn-primary">
+                    📊 Create KPI Report
+                </a>
+                <a href="{% url 'dashboard:kpi_overview' %}?client={{ client.slug }}" class="btn btn-secondary">
+                    📈 View Reports
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-card {
+    padding: var(--space-8);
+}
+
+.form-section {
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.form-group {
+    margin-bottom: var(--space-6);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+}
+
+.form-label.required::after {
+    content: ' *';
+    color: var(--danger-color);
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--space-4);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    background: var(--glass-bg);
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: var(--glass-backdrop);
+    -webkit-backdrop-filter: var(--glass-backdrop);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.02);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.readonly-field {
+    padding: var(--space-4);
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    color: rgba(255, 255, 255, 0.8);
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+}
+
+.help-text {
+    display: block;
+    margin-top: var(--space-2);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.field-error {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.additional-actions {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-buttons {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+/* Enhanced form animations */
+.client-form {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-control:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.form-control:invalid {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 2px rgba(250, 112, 154, 0.2);
+}
+
+.form-control:valid:not(:placeholder-shown) {
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 2px rgba(16, 242, 254, 0.2);
+}
+
+/* Loading state for form submission */
+.client-form.loading .form-control {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.client-form.loading .btn {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .form-container {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .form-card {
+        padding: var(--space-6);
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+}
+
+/* Focus management */
+.form-control:focus + .help-text {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Accessibility improvements */
+.form-label:focus-within {
+    color: var(--white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .client-form {
+        animation: none;
+    }
+    
+    .form-control {
+        transition: none;
+    }
+    
+    .form-control:focus {
+        transform: none;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.client-form');
+    const nameInput = document.querySelector('#id_name');
+    
+    // Auto-focus on name field
+    if (nameInput) {
+        nameInput.focus();
+    }
+    
+    // Form validation feedback
+    const inputs = form.querySelectorAll('.form-control');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.classList.add('has-value');
+            } else {
+                this.classList.remove('has-value');
+            }
+        });
+        
+        // Set initial state
+        if (input.value.trim()) {
+            input.classList.add('has-value');
+        }
+    });
+    
+    // Form submission handling
+    form.addEventListener('submit', function() {
+        this.classList.add('loading');
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Saving...';
+        
+        // Reset after timeout (in case of validation errors)
+        setTimeout(() => {
+            this.classList.remove('loading');
+            submitBtn.textContent = originalText;
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}
