@@ -10,7 +10,7 @@ class KPIReportForm(forms.ModelForm):
     class Meta:
         model = KPIReport
         fields = [
-            "client_name",
+            "client",
             "period",
             "period_start",
             "period_end",
@@ -35,7 +35,7 @@ class KPIReportForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        clients = kwargs.pop("client", None)
+        clients = kwargs.pop("clients", None)
         super().__init__(*args, **kwargs)
         if clients is not None:
-            self.fields["client_name"].queryset = clients
+            self.fields["client"].queryset = clients

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h1>KPI Overview</h1>
+<form method="get" style="margin-bottom: 1 rem">
+    <label>Client :</label>
+    <select name="client" onchange="this.form.submit()">
+        <option value="">All</option>
+        {% for client in clients %}
+        <option value="{{ client.slug }}" {% if active_client == client.slug %}selected{% endif %}>{{ client.name }}</option>
+        {% endfor %}
+    </select>
+    <a href="{% url 'dashboard:kpi_create' %}" class="btn btn-primary" style="float: right;">Add New Report</a>
+</form>
+
+<table border="1" cellpadding="6" style="border-collapse: collapse; width: 100%;">
+    <thead>
+        <tr>
+            <th>Client</th>
+            <th>Period</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Tickets Received / Unresolved / Reopened</th>
+            <th>Tickets Resolved</th>
+            <th>Tickets Stil Open</th>
+            <th>FRT AVG</th>
+            <th>RT AVG</th>
+            <th>CSAT</th>
+            <th>Refunds</th>
+            <th>Chargebacks (Received/Processed)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for report in reports %}
+        <tr>
+            <td>{{ report.client.name }}</td>
+            <td>{{ report.get_period_display }}</td>
+            <td>{{ report.period_start }}</td>
+            <td>{{ report.period_end }}</td>
+            <td>{{ report.tickets_received }} / {{ report.tickets_unresolved }} / {{ report.tickets_reopened }}</td>
+            <td>{{ report.tickets_resolved }}</td>
+            <td>{{ report.tickets_still_open }}</td>
+            <td>{{ report.frt_avg }}</td>
+            <td>{{ report.rt_avg }}</td>
+            <td>{{ report.csat }}%</td>
+            <td>{{ report.refunds }}</td>
+            <td>{{ report.chargebacks_received }} / {{ report.chargebacks_processed }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="12">No reports found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -123,7 +123,7 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Login and Logout Redirects
-LOGIN_URL = "login"
+LOGIN_URL = "accounts:login"
 LOGIN_REDIRECT_URL = "dashboard:kpi_overview"
 LOGOUT_REDIRECT_URL = "login"
 

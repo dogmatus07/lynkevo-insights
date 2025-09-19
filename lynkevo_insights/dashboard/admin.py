@@ -34,5 +34,5 @@ class KPIReportAdmin(admin.ModelAdmin):
         "period_end",
         "tag",
     )
-    search_fields = "client__name"
+    search_fields = ("client__name",)
     ordering = ("-created_at",)

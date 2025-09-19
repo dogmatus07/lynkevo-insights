@@ -87,7 +87,7 @@ class KPIReport(models.Model):
 
     # About ticket status
     tickets_received = models.PositiveIntegerField(default=0)
-    tickets_reopened = models.PositiveIntegerField
+    tickets_reopened = models.PositiveIntegerField(default=0)
     tickets_resolved = models.PositiveIntegerField(default=0)
     tickets_unresolved = models.PositiveIntegerField(default=0)
     tickets_still_open = models.PositiveIntegerField(default=0)

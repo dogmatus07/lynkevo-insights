@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<h1>Report Overview</h1>
+<form method="get" style="margin-bottom: 1 rem">
+    <label>Client :</label>
+    <select name="client" onchange="this.form.submit()">
+        <option value="">All</option>
+        {% for client in clients %}
+        <option value="{{ client.slug }}" {% if active_client == client.slug %}selected{% endif %}>{{ client.name }}</option>
+        {% endfor %}
+    </select>
+    <a href="{% url 'reports:generate_report' %}" class="btn btn-primary" style="float: right;">Generate New Report</a>
+</form>
+{% endblock %}

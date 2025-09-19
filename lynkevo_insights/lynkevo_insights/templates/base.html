@@ -13,10 +13,10 @@
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
                     <li class="nav-item"><a href="{% url 'dashboard:kpi_overview' %}" class="nav-link">Dashboard</a></li>
-                    <li class="nav-item"><a href="{% url 'reports:report_list' %}" class="nav-link">Reports</a></li>
-                    <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link">Logout</a></li>
+                    <li class="nav-item"><a href="{% url 'reports:report_overview' %}" class="nav-link">Reports</a></li>
+                    <li class="nav-item"><a href="{% url 'accounts:logout' %}" class="nav-link">Logout</a></li>
                 {% else %}
-                    <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+                    <li class="nav-item"><a href="{% url 'accounts:login' %}" class="nav-link">Login</a></li>
                 {% endif %}
             </ul>
         </nav>

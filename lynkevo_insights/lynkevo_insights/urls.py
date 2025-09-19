@@ -22,6 +22,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/", include("accounts.urls")),
     path("dashboard/", include(("dashboard.urls", "dashboard"), namespace="dashboard")),
-    path("reports/", include("reports.urls", namespace="reports")),
-    path("", include("dashboard.urls")),  # Default route to dashboard
+    path("reports/", include(("reports.urls", "reports"), namespace="reports")),
+    path("", include(("dashboard.urls", "dashboard"), namespace="dashboard_default")),
 ]
