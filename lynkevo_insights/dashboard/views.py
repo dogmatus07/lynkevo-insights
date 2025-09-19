@@ -31,10 +31,17 @@ def kpi_overview(request):
     client_slug = request.GET.get("client")
     period_filter = request.GET.get("period")
     active_client = None
+    active_client_name = None
     
     if client_slug:
         qs = qs.filter(client__slug=client_slug)
         active_client = client_slug
+        # Get the client name for display
+        try:
+            selected_client = clients.get(slug=client_slug)
+            active_client_name = selected_client.name
+        except Client.DoesNotExist:
+            pass
         
     if period_filter:
         qs = qs.filter(period=period_filter)
@@ -49,17 +56,26 @@ def kpi_overview(request):
         avg_csat=Avg('csat'),
     )
     
-    # Recent reports
-    recent_reports = qs.order_by('-created_at')[:10]
+    # Add calculated fields to each report
+    reports_with_calculations = []
+    for report in qs.order_by('-created_at')[:200]:
+        # Calculate resolution rate
+        resolution_rate = 0
+        if report.tickets_received > 0:
+            resolution_rate = round((report.tickets_resolved / report.tickets_received) * 100)
+        
+        # Add calculated field
+        report.resolution_rate = resolution_rate
+        reports_with_calculations.append(report)
     
     # Get period choices for filter
     period_choices = KPIReport.PERIOD_CHOICES
     
     context = {
-        "reports": qs[:200],
-        "recent_reports": recent_reports,
+        "reports": reports_with_calculations,
         "clients": clients,
         "active_client": active_client,
+        "active_client_name": active_client_name,
         "period_filter": period_filter,
         "period_choices": period_choices,
         "summary_metrics": summary_metrics,
@@ -78,7 +94,7 @@ def kpi_create(request):
         form = KPIReportForm(request.POST, clients=clients)
         if form.is_valid():
             form.save()
-            messages.success(request, "KPI Report created successfully! 🎉")
+            messages.success(request, "KPI Report created successfully!")
             return redirect("dashboard:kpi_overview")
         else:
             messages.error(request, "Please correct the errors below.")

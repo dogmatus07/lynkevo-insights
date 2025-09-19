@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create New User - Lynkevo Insights{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Create New User</h1>
+    <div class="page-actions">
+        <a href="{% url 'accounts:user_management' %}" class="btn btn-secondary">
+            ← Back to Users
+        </a>
+    </div>
+</div>
+
+<div class="form-container">
+    <div class="glass-card form-card">
+        <form method="POST" class="user-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <div class="form-section">
+                <h3 class="section-title">Account Information</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.username.id_for_label }}" class="form-label required">
+                            Username
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="field-error">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                        <small class="help-text">
+                            Unique identifier for login (letters, numbers, @/./+/-/_ only)
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.email.id_for_label }}" class="form-label required">
+                            Email Address
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="field-error">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                        <small class="help-text">
+                            Used for notifications and account recovery
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Personal Information</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                            First Name
+                        </label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}
+                            <div class="field-error">{{ form.first_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                            Last Name
+                        </label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <div class="field-error">{{ form.last_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Password Setup</h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.password1.id_for_label }}" class="form-label required">
+                            Password
+                        </label>
+                        {{ form.password1 }}
+                        {% if form.password1.errors %}
+                            <div class="field-error">{{ form.password1.errors.0 }}</div>
+                        {% endif %}
+                        <small class="help-text">
+                            Must be at least 8 characters with mixed case, numbers, and symbols
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.password2.id_for_label }}" class="form-label required">
+                            Confirm Password
+                        </label>
+                        {{ form.password2 }}
+                        {% if form.password2.errors %}
+                            <div class="field-error">{{ form.password2.errors.0 }}</div>
+                        {% endif %}
+                        <small class="help-text">
+                            Re-enter the password to confirm
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">Permissions</h3>
+                
+                <div class="permission-group">
+                    <div class="checkbox-container">
+                        {{ form.is_staff }}
+                        <label for="{{ form.is_staff.id_for_label }}" class="checkbox-label">
+                            Staff Status
+                        </label>
+                    </div>
+                    <div class="permission-help">
+                        Staff users can access the admin interface and manage clients and other users.
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Create User Account
+                </button>
+                <a href="{% url 'accounts:user_management' %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.form-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.form-card {
+    padding: var(--space-8);
+}
+
+.form-section {
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.form-group {
+    margin-bottom: var(--space-6);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+}
+
+.form-label.required::after {
+    content: ' *';
+    color: var(--danger-color);
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--space-4);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    background: var(--glass-bg);
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: var(--glass-backdrop);
+    -webkit-backdrop-filter: var(--glass-backdrop);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.02);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.help-text {
+    display: block;
+    margin-top: var(--space-2);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.field-error {
+    display: block;
+    margin-top: var(--space-2);
+    color: var(--danger-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.permission-group {
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+.checkbox-label {
+    font-weight: 600;
+    color: var(--white);
+    cursor: pointer;
+    margin: 0;
+}
+
+.permission-help {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced form animations */
+.user-form {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-control:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.form-control:invalid {
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 2px rgba(250, 112, 154, 0.2);
+}
+
+.form-control:valid:not(:placeholder-shown) {
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 2px rgba(16, 242, 254, 0.2);
+}
+
+/* Password strength indicator */
+#id_password1:focus + .help-text::after {
+    content: " 💡 Use a mix of uppercase, lowercase, numbers, and symbols";
+    color: var(--warning-color);
+    font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .form-container {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .form-card {
+        padding: var(--space-6);
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.user-form');
+    const usernameInput = document.querySelector('#id_username');
+    const password1 = document.querySelector('#id_password1');
+    const password2 = document.querySelector('#id_password2');
+    
+    // Auto-focus on username field
+    if (usernameInput) {
+        usernameInput.focus();
+    }
+    
+    // Password confirmation validation
+    if (password2) {
+        password2.addEventListener('input', function() {
+            if (password1.value !== password2.value) {
+                password2.setCustomValidity('Passwords do not match');
+            } else {
+                password2.setCustomValidity('');
+            }
+        });
+    }
+    
+    // Form submission handling
+    form.addEventListener('submit', function() {
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Creating Account...';
+        submitBtn.disabled = true;
+        
+        // Reset after timeout (in case of validation errors)
+        setTimeout(() => {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }, 5000);
+    });
+    
+    // Real-time validation feedback
+    const inputs = form.querySelectorAll('.form-control');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.classList.add('has-value');
+            } else {
+                this.classList.remove('has-value');
+            }
+        });
+        
+        // Set initial state
+        if (input.value.trim()) {
+            input.classList.add('has-value');
+        }
+    });
+});
+</script>
+{% endblock %}
