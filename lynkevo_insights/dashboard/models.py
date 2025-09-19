@@ -7,7 +7,7 @@ class KPIReport(models.Model):
 
     Each report includes metrics such as ticket counts, response times, customer satisfaction (CSAT),
     refunds, and chargebacks over a specified period (weekly or monthly).
-    
+
     Attributes:
         client (ForeignKey): Reference to the client for whom the report is generated.
         period (CharField): The reporting period, either 'weekly' or 'monthly'.
@@ -78,7 +78,9 @@ class KPIReport(models.Model):
         ],
     }
 
-    client = models.ForeignKey("accounts.Client", on_delete=models.CASCADE, related_name="kpi_reports")
+    client = models.ForeignKey(
+        "accounts.Client", on_delete=models.CASCADE, related_name="kpi_reports"
+    )
     period = models.CharField(max_length=20, choices=PERIOD_CHOICES)
     period_start = models.DateField()
     period_end = models.DateField()
@@ -90,11 +92,9 @@ class KPIReport(models.Model):
     tickets_unresolved = models.PositiveIntegerField(default=0)
     tickets_still_open = models.PositiveIntegerField(default=0)
 
-
     # About ticket time metrics
     first_reply_time_avg = models.DurationField(null=True, blank=True)
     resolution_time_avg = models.DurationField(null=True, blank=True)
-
 
     # About customer satisfaction and financial metrics
     csat = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
