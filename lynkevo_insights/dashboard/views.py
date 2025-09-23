@@ -51,9 +51,9 @@ def kpi_overview(request):
         total_reports=Count('id'),
         total_tickets_received=Sum('tickets_received'),
         total_tickets_resolved=Sum('tickets_resolved'),
-        total_refunds=Sum('refunds'),
+        total_refunds=Sum('total_refund_requests'),  # ✅ Corrigé: était 'refunds'
         total_chargebacks=Sum('chargebacks_opened'),
-        avg_csat=Avg('csat'),
+        # ✅ Supprimé avg_csat car le champ n'existe pas dans le modèle
     )
     
     # Add calculated fields to each report
@@ -132,15 +132,12 @@ def dashboard_analytics(request):
             monthly_data[month_key] = {
                 'tickets_received': 0,
                 'tickets_resolved': 0,
-                'csat_scores': [],
-                'refunds': 0
+                'refunds': 0  # ✅ Gardé 'refunds' comme clé pour les données JSON (pas le champ DB)
             }
         
         monthly_data[month_key]['tickets_received'] += report.tickets_received
         monthly_data[month_key]['tickets_resolved'] += report.tickets_resolved
-        monthly_data[month_key]['refunds'] += report.refunds
-        if report.csat:
-            monthly_data[month_key]['csat_scores'].append(float(report.csat))
+        monthly_data[month_key]['refunds'] += report.total_refund_requests  # ✅ Corrigé: accès au champ DB
         
         # Client performance
         client_name = report.client.name
@@ -149,33 +146,22 @@ def dashboard_analytics(request):
                 'total_tickets': 0,
                 'total_resolved': 0,
                 'total_refunds': 0,
-                'csat_scores': []
             }
         
         client_performance[client_name]['total_tickets'] += report.tickets_received
         client_performance[client_name]['total_resolved'] += report.tickets_resolved
-        client_performance[client_name]['total_refunds'] += report.refunds
-        if report.csat:
-            client_performance[client_name]['csat_scores'].append(float(report.csat))
+        client_performance[client_name]['total_refunds'] += report.total_refund_requests  # ✅ Corrigé
     
-    # Calculate averages for CSAT
-    for month_data in monthly_data.values():
-        if month_data['csat_scores']:
-            month_data['avg_csat'] = sum(month_data['csat_scores']) / len(month_data['csat_scores'])
-        else:
-            month_data['avg_csat'] = 0
-    
+    # Calculate resolution rates (supprimé CSAT car non disponible)
     for client_data in client_performance.values():
-        if client_data['csat_scores']:
-            client_data['avg_csat'] = sum(client_data['csat_scores']) / len(client_data['csat_scores'])
-            client_data['resolution_rate'] = (client_data['total_resolved'] / client_data['total_tickets']) * 100 if client_data['total_tickets'] > 0 else 0
+        if client_data['total_tickets'] > 0:
+            client_data['resolution_rate'] = (client_data['total_resolved'] / client_data['total_tickets']) * 100
         else:
-            client_data['avg_csat'] = 0
             client_data['resolution_rate'] = 0
     
-    # Top performers
-    top_csat_clients = sorted(
-        [(name, data['avg_csat']) for name, data in client_performance.items() if data['avg_csat'] > 0],
+    # Top performers by resolution rate (au lieu de CSAT)
+    top_resolution_clients = sorted(
+        [(name, data['resolution_rate']) for name, data in client_performance.items()],
         key=lambda x: x[1],
         reverse=True
     )[:5]
@@ -183,7 +169,7 @@ def dashboard_analytics(request):
     context = {
         'monthly_data': json.dumps(monthly_data),
         'client_performance': json.dumps(client_performance),
-        'top_csat_clients': top_csat_clients,
+        'top_resolution_clients': top_resolution_clients,  # ✅ Changé de top_csat_clients
         'date_range': f"{start_date.strftime('%B %Y')} - {end_date.strftime('%B %Y')}",
         'total_reports': reports.count(),
     }

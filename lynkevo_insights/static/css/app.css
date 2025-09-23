@@ -160,8 +160,22 @@ p { margin-bottom: var(--space-4); }
   align-items: center;
 }
 
+/* Navigation Icons */
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--space-2);
+  vertical-align: middle;
+}
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--space-2);
+}
+
 .nav-link {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   color: var(--gray-600);
   text-decoration: none;
   border-radius: var(--radius);
@@ -169,6 +183,8 @@ p { margin-bottom: var(--space-4); }
   font-size: var(--text-sm);
   transition: all var(--transition-fast);
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .nav-link:hover {
@@ -182,11 +198,15 @@ p { margin-bottom: var(--space-4); }
   color: var(--white);
 }
 
-/* Main Layout */
+.nav-link.active .nav-icon {
+  color: var(--white);
+}
+
+/* Main Layout with better spacing */
 .container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: var(--space-8) var(--space-4);
+  padding: var(--space-10) var(--space-6);
 }
 
 /* Cards */

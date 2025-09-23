@@ -1,356 +1,235 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Analytics Dashboard - Lynkevo Insights{% endblock %}
+{% block title %}Analytics Dashboard{% endblock %}
 
 {% block extra_head %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
-
-{% block content %}
-<div class="analytics-page">
-    <div class="page-header">
-        <h1>Analytics Dashboard</h1>
-        <div class="page-actions">
-            <span class="date-range">{{ date_range }}</span>
-            <a href="{% url 'dashboard:kpi_overview' %}" class="btn btn-secondary">
-                Back to Reports
-            </a>
-        </div>
-    </div>
-
-    <!-- Key Metrics Cards -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-icon">🎯</div>
-            <div class="metric-content">
-                <h3>Total Reports</h3>
-                <div class="metric-value">{{ total_reports }}</div>
-                <div class="metric-label">Last 6 months</div>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon">⭐</div>
-            <div class="metric-content">
-                <h3>Top CSAT Score</h3>
-                <div class="metric-value">
-                    {% if top_csat_clients %}
-                        {{ top_csat_clients.0.1|floatformat:1 }}%
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </div>
-                <div class="metric-label">
-                    {% if top_csat_clients %}
-                        {{ top_csat_clients.0.0 }}
-                    {% else %}
-                        No data
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon">📊</div>
-            <div class="metric-content">
-                <h3>Active Clients</h3>
-                <div class="metric-value">{{ top_csat_clients|length }}</div>
-                <div class="metric-label">With CSAT data</div>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon">📈</div>
-            <div class="metric-content">
-                <h3>Trend</h3>
-                <div class="metric-value">📊</div>
-                <div class="metric-label">Data visualization</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Section -->
-    <div class="charts-grid">
-        <!-- Monthly Trends -->
-        <div class="chart-container">
-            <div class="chart-header">
-                <h3>Monthly Ticket Trends</h3>
-                <p>Tickets received vs resolved over time</p>
-            </div>
-            <div class="chart-content">
-                <canvas id="monthlyTrendsChart" width="400" height="200"></canvas>
-            </div>
-        </div>
-
-        <!-- CSAT Trends -->
-        <div class="chart-container">
-            <div class="chart-header">
-                <h3>Customer Satisfaction Trends</h3>
-                <p>Average CSAT scores by month</p>
-            </div>
-            <div class="chart-content">
-                <canvas id="csatTrendsChart" width="400" height="200"></canvas>
-            </div>
-        </div>
-
-        <!-- Client Performance -->
-        <div class="chart-container full-width">
-            <div class="chart-header">
-                <h3>Client Performance Overview</h3>
-                <p>Resolution rate vs CSAT score by client</p>
-            </div>
-            <div class="chart-content">
-                <canvas id="clientPerformanceChart" width="800" height="300"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Top Performers Table -->
-    {% if top_csat_clients %}
-    <div class="top-performers-section">
-        <h3>Top Performing Clients (CSAT)</h3>
-        <div class="performers-grid">
-            {% for client_name, csat_score in top_csat_clients %}
-            <div class="performer-card">
-                <div class="performer-rank">{{ forloop.counter }}</div>
-                <div class="performer-info">
-                    <h4>{{ client_name }}</h4>
-                    <div class="performer-score">{{ csat_score|floatformat:1 }}%</div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-</div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <style>
-/* Analytics specific styles */
-.analytics-page {
-    max-width: 1400px;
+.analytics-container {
+    max-width: 1200px;
     margin: 0 auto;
+    padding: var(--space-6);
 }
 
-.metrics-grid {
+.analytics-header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.analytics-title {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: var(--space-4);
+}
+
+.date-range {
+    color: var(--gray-600);
+    font-size: var(--text-lg);
+}
+
+.stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-6);
-    margin-bottom: var(--spacing-8);
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
 }
 
-.metric-card {
+.stat-card {
     background: white;
-    padding: var(--spacing-6);
+    padding: var(--space-6);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--gray-200);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-4);
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--primary);
 }
 
-.metric-icon {
-    font-size: 2rem;
-    opacity: 0.8;
-}
-
-.metric-content h3 {
-    margin: 0 0 var(--spacing-2) 0;
+.stat-label {
+    font-size: var(--text-sm);
     color: var(--gray-600);
-    font-size: var(--font-size-sm);
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    margin-bottom: var(--space-2);
 }
 
-.metric-value {
-    font-size: var(--font-size-3xl);
+.stat-value {
+    font-size: var(--text-2xl);
     font-weight: 700;
-    color: var(--gray-900);
-    line-height: 1;
+    color: var(--primary);
 }
 
-.metric-label {
-    color: var(--gray-500);
-    font-size: var(--font-size-xs);
-    margin-top: var(--spacing-1);
-}
-
-.charts-grid {
+.charts-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-6);
-    margin-bottom: var(--spacing-8);
+    gap: var(--space-8);
+    margin-bottom: var(--space-8);
 }
 
 .chart-container {
     background: white;
+    padding: var(--space-6);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--gray-200);
-    overflow: hidden;
+    box-shadow: var(--shadow);
 }
 
-.chart-container.full-width {
-    grid-column: 1 / -1;
+.chart-title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: var(--space-4);
+    text-align: center;
 }
 
-.chart-header {
-    padding: var(--spacing-6);
-    border-bottom: 1px solid var(--gray-200);
-    background: var(--gray-50);
+.chart-canvas {
+    max-height: 300px;
 }
 
-.chart-header h3 {
-    margin: 0 0 var(--spacing-1) 0;
-    color: var(--gray-900);
-    font-size: var(--font-size-lg);
-}
-
-.chart-header p {
-    margin: 0;
-    color: var(--gray-600);
-    font-size: var(--font-size-sm);
-}
-
-.chart-content {
-    padding: var(--spacing-6);
-    height: 300px;
-    position: relative;
-}
-
-.chart-content canvas {
-    max-height: 100%;
-}
-
-.top-performers-section {
+.top-performers {
     background: white;
-    padding: var(--spacing-8);
+    padding: var(--space-6);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--gray-200);
+    box-shadow: var(--shadow);
 }
 
-.top-performers-section h3 {
-    margin-bottom: var(--spacing-6);
-    color: var(--gray-900);
+.performers-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-.performers-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-4);
-}
-
-.performer-card {
+.performer-item {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: var(--spacing-4);
-    padding: var(--spacing-4);
+    padding: var(--space-3);
+    margin-bottom: var(--space-2);
     background: var(--gray-50);
     border-radius: var(--radius);
-    border: 1px solid var(--gray-200);
 }
 
-.performer-rank {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--primary-color);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: var(--font-size-lg);
-}
-
-.performer-info h4 {
-    margin: 0 0 var(--spacing-1) 0;
-    font-size: var(--font-size-base);
-    color: var(--gray-900);
+.performer-name {
+    font-weight: 600;
+    color: var(--gray-700);
 }
 
 .performer-score {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    color: var(--success-color);
-}
-
-.date-range {
-    background: var(--gray-100);
-    color: var(--gray-600);
-    padding: var(--spacing-2) var(--spacing-4);
-    border-radius: var(--radius);
-    font-size: var(--font-size-sm);
-    font-weight: 500;
+    font-weight: 700;
+    color: var(--primary);
 }
 
 @media (max-width: 768px) {
-    .charts-grid {
+    .charts-section {
         grid-template-columns: 1fr;
     }
-    
-    .metrics-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .page-header {
-        flex-direction: column;
-        gap: var(--spacing-4);
-        align-items: stretch;
-    }
-    
-    .performers-grid {
-        grid-template-columns: 1fr;
+    .analytics-container {
+        padding: var(--space-4);
     }
 }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-container">
+    <!-- Header -->
+    <div class="analytics-header">
+        <h1 class="analytics-title">Analytics Dashboard</h1>
+        <p class="date-range">{{ date_range }}</p>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Reports</div>
+            <div class="stat-value">{{ total_reports }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Active Clients</div>
+            <div class="stat-value">{{ top_resolution_clients|length }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Period Covered</div>
+            <div class="stat-value">6 Months</div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <!-- Monthly Trends Chart -->
+        <div class="chart-container">
+            <h2 class="chart-title">Monthly Trends</h2>
+            <canvas id="monthlyTrendsChart" class="chart-canvas"></canvas>
+        </div>
+
+        <!-- Client Performance Chart -->
+        <div class="chart-container">
+            <h2 class="chart-title">Client Performance</h2>
+            <canvas id="clientPerformanceChart" class="chart-canvas"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Performers -->
+    <div class="top-performers">
+        <h2 class="chart-title">Top Performers by Resolution Rate</h2>
+        <ul class="performers-list">
+            {% for client_name, resolution_rate in top_resolution_clients %}
+            <li class="performer-item">
+                <span class="performer-name">{{ client_name }}</span>
+                <span class="performer-score">{{ resolution_rate|floatformat:1 }}%</span>
+            </li>
+            {% empty %}
+            <li class="performer-item">
+                <span class="performer-name">No data available</span>
+                <span class="performer-score">-</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Back to Dashboard -->
+    <div style="text-align: center; margin-top: var(--space-8);">
+        <a href="{% url 'dashboard:kpi_overview' %}" class="btn btn-primary">
+            Back to Dashboard
+        </a>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Parse data from Django
+    // Parse data from Django context
     const monthlyData = JSON.parse('{{ monthly_data|escapejs }}');
-    const clientPerformanceData = JSON.parse('{{ client_performance|escapejs }}');
-    
-    // Prepare data for charts
-    const months = Object.keys(monthlyData).sort();
-    const ticketsReceived = months.map(month => monthlyData[month].tickets_received);
-    const ticketsResolved = months.map(month => monthlyData[month].tickets_resolved);
-    const csatScores = months.map(month => monthlyData[month].avg_csat);
-    
+    const clientPerformance = JSON.parse('{{ client_performance|escapejs }}');
+
     // Monthly Trends Chart
-    const monthlyTrendsCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
-    new Chart(monthlyTrendsCtx, {
+    const monthlyCtx = document.getElementById('monthlyTrendsChart').getContext('2d');
+    const monthlyLabels = Object.keys(monthlyData).sort();
+    const ticketsReceived = monthlyLabels.map(month => monthlyData[month]?.tickets_received || 0);
+    const ticketsResolved = monthlyLabels.map(month => monthlyData[month]?.tickets_resolved || 0);
+
+    new Chart(monthlyCtx, {
         type: 'line',
         data: {
-            labels: months.map(month => {
-                const date = new Date(month + '-01');
-                return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-            }),
-            datasets: [{
-                label: 'Tickets Received',
-                data: ticketsReceived,
-                borderColor: '#ef4444',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                tension: 0.4
-            }, {
-                label: 'Tickets Resolved',
-                data: ticketsResolved,
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                tension: 0.4
-            }]
+            labels: monthlyLabels,
+            datasets: [
+                {
+                    label: 'Tickets Received',
+                    data: ticketsReceived,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Tickets Resolved',
+                    data: ticketsResolved,
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.1
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
             scales: {
                 y: {
                     beginAtZero: true
@@ -358,96 +237,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-    
-    // CSAT Trends Chart
-    const csatTrendsCtx = document.getElementById('csatTrendsChart').getContext('2d');
-    new Chart(csatTrendsCtx, {
-        type: 'line',
+
+    // Client Performance Chart
+    const clientCtx = document.getElementById('clientPerformanceChart').getContext('2d');
+    const clientNames = Object.keys(clientPerformance);
+    const resolutionRates = clientNames.map(name => clientPerformance[name]?.resolution_rate || 0);
+
+    new Chart(clientCtx, {
+        type: 'bar',
         data: {
-            labels: months.map(month => {
-                const date = new Date(month + '-01');
-                return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-            }),
+            labels: clientNames,
             datasets: [{
-                label: 'Average CSAT (%)',
-                data: csatScores,
-                borderColor: '#3b82f6',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                tension: 0.4,
-                fill: true
+                label: 'Resolution Rate (%)',
+                data: resolutionRates,
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
             scales: {
                 y: {
-                    beginAtZero: true,
-                    max: 100
-                }
-            }
-        }
-    });
-    
-    // Client Performance Chart (Scatter plot)
-    const clientNames = Object.keys(clientPerformanceData);
-    const scatterData = clientNames.map(name => {
-        const client = clientPerformanceData[name];
-        return {
-            x: client.resolution_rate,
-            y: client.avg_csat,
-            label: name
-        };
-    });
-    
-    const clientPerformanceCtx = document.getElementById('clientPerformanceChart').getContext('2d');
-    new Chart(clientPerformanceCtx, {
-        type: 'scatter',
-        data: {
-            datasets: [{
-                label: 'Client Performance',
-                data: scatterData,
-                backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                borderColor: '#3b82f6',
-                borderWidth: 2,
-                pointRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const point = context.raw;
-                            return `${point.label}: ${point.x.toFixed(1)}% resolution, ${point.y.toFixed(1)}% CSAT`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Resolution Rate (%)'
-                    },
-                    beginAtZero: true,
-                    max: 100
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Average CSAT (%)'
-                    },
                     beginAtZero: true,
                     max: 100
                 }

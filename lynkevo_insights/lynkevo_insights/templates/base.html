@@ -36,44 +36,52 @@
                 {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a href="{% url 'dashboard:kpi_overview' %}" class="nav-link {% if request.resolver_match.url_name == 'kpi_overview' %}active{% endif %}">
+                            <i data-feather="bar-chart-2" class="nav-icon"></i>
                             Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'dashboard:dashboard_analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}">
+                            <i data-feather="trending-up" class="nav-icon"></i>
                             Analytics
                         </a>
                     </li>
                     {% if user.is_staff %}
                     <li class="nav-item">
                         <a href="{% url 'accounts:client_list' %}" class="nav-link {% if request.resolver_match.url_name == 'client_list' %}active{% endif %}">
+                            <i data-feather="briefcase" class="nav-icon"></i>
                             Clients
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'accounts:user_management' %}" class="nav-link {% if request.resolver_match.url_name == 'user_management' %}active{% endif %}">
+                            <i data-feather="users" class="nav-icon"></i>
                             Users
                         </a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
                         <a href="{% url 'reports:report_overview' %}" class="nav-link {% if request.resolver_match.url_name == 'report_overview' %}active{% endif %}">
+                            <i data-feather="file-text" class="nav-icon"></i>
                             Reports
                         </a>
                     </li>
                     <li class="nav-item dropdown">
                         <span class="nav-link">
+                            <i data-feather="user" class="nav-icon"></i>
                             {{ user.get_full_name|default:user.username }}
                         </span>
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'accounts:logout' %}" class="nav-link">
+                            <i data-feather="log-out" class="nav-icon"></i>
                             Logout
                         </a>
                     </li>
                 {% else %}
                     <li class="nav-item">
                         <a href="{% url 'accounts:login' %}" class="btn btn-primary">
+                            <i data-feather="log-in" class="btn-icon"></i>
                             Sign In
                         </a>
                     </li>
@@ -237,6 +245,11 @@
                 input.addEventListener('input', debouncedSearch);
             });
         });
+        
+        // Initialize Feather Icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
     </script>
     
     {% block extra_scripts %}{% endblock %}
