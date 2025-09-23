@@ -8,7 +8,7 @@ __pycache__/
 # Virtualenv
 venv/
 .env/
- ../venv/
+../venv/
 
 # Fichiers Django
 *.sqlite3
