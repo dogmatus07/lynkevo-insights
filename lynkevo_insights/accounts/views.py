@@ -97,7 +97,21 @@ def client_detail(request, pk):
     total_reports = client.kpi_reports.count()
     total_tickets_received = sum([r.tickets_received for r in client.kpi_reports.all()])
     total_tickets_resolved = sum([r.tickets_resolved for r in client.kpi_reports.all()])
-    avg_csat = client.kpi_reports.aggregate(avg_csat=models.Avg('csat'))['avg_csat']
+    
+    # ✅ Supprimé la ligne problématique avec 'csat'
+    # avg_csat = client.kpi_reports.aggregate(avg_csat=models.Avg('csat'))['avg_csat']
+    
+    # ✅ Calculer un taux de résolution moyen à la place
+    avg_resolution_rate = 0
+    if recent_reports:
+        resolution_rates = []
+        for report in client.kpi_reports.all():
+            if report.tickets_received > 0:
+                rate = (report.tickets_resolved / report.tickets_received) * 100
+                resolution_rates.append(rate)
+        
+        if resolution_rates:
+            avg_resolution_rate = sum(resolution_rates) / len(resolution_rates)
     
     context = {
         'client': client,
@@ -107,7 +121,7 @@ def client_detail(request, pk):
             'total_reports': total_reports,
             'total_tickets_received': total_tickets_received,
             'total_tickets_resolved': total_tickets_resolved,
-            'avg_csat': avg_csat,
+            'avg_resolution_rate': round(avg_resolution_rate, 1),  # ✅ Remplacé avg_csat
             'resolution_rate': (total_tickets_resolved / total_tickets_received * 100) if total_tickets_received > 0 else 0,
         }
     }

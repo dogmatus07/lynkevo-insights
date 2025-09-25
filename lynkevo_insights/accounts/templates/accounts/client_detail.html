@@ -92,8 +92,8 @@
         <div class="metric-icon">⭐</div>
         <div class="metric-content">
             <div class="metric-value">
-                {% if metrics.avg_csat %}
-                    {{ metrics.avg_csat|floatformat:1 }}%
+                {% if metrics.avg_avg_resolution_rate %}
+                    {{ metrics.avg_resolution_rate|floatformat:1 }}%
                 {% else %}
                     N/A
                 {% endif %}
@@ -139,8 +139,8 @@
                     <div class="report-metrics">
                         <span class="metric-small">{{ report.tickets_received }} received</span>
                         <span class="metric-small">{{ report.tickets_resolved }} resolved</span>
-                        {% if report.csat %}
-                            <span class="metric-small">{{ report.csat }}% CSAT</span>
+                        {% if report.avg_resolution_rate %}
+                            <span class="metric-small">{{ report.avg_resolution_rate }}% Resolution Rate</span>
                         {% endif %}
                     </div>
                 </div>

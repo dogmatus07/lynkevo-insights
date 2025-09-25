@@ -46,3 +46,29 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.client.name} ({self.role})"
+
+
+class Supplier(models.Model):
+    """
+    Model representing a supplier associated with a client and shop.
+    """
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, blank=True)
+    contact_email = models.EmailField(blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+    
+
+class Shop(models.Model):
+    """
+    Model representing a shop associated with a client and supplier.
+    """
+    
+    
