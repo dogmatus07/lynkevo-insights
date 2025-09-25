@@ -3,39 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lynkevo Insights</title>
+    <title>{% block title %}Lynkevo Insights{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="https://lynkevo.com/logo.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="/static/css/app.css">
+    
+    <!-- Meta tags -->
+    <meta name="description" content="Professional KPI reporting and analytics dashboard for customer service metrics">
+    <meta name="author" content="Lynkevo">
+    <meta name="theme-color" content="#007C89">
+    
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <a href="{% url 'dashboard:kpi_overview' %}" class="navbar-brand">Lynkevo Insights</a>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="{% url 'dashboard:kpi_overview' %}" class="navbar-brand">
+                <img src="https://lynkevo.com/logo.png" alt="Lynkevo" class="brand-logo">
+                Lynkevo Insights
+            </a>
+            
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
-                    <li class="nav-item"><a href="{% url 'dashboard:kpi_overview' %}" class="nav-link">Dashboard</a></li>
-                    <li class="nav-item"><a href="{% url 'reports:report_list' %}" class="nav-link">Reports</a></li>
-                    <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link">Logout</a></li>
+                    <li class="nav-item">
+                        <a href="{% url 'dashboard:kpi_overview' %}" class="nav-link {% if request.resolver_match.url_name == 'kpi_overview' %}active{% endif %}">
+                            <i data-feather="bar-chart-2" class="nav-icon"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'dashboard:dashboard_analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}">
+                            <i data-feather="trending-up" class="nav-icon"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a href="{% url 'accounts:client_list' %}" class="nav-link {% if request.resolver_match.url_name == 'client_list' %}active{% endif %}">
+                            <i data-feather="briefcase" class="nav-icon"></i>
+                            Clients
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'accounts:user_management' %}" class="nav-link {% if request.resolver_match.url_name == 'user_management' %}active{% endif %}">
+                            <i data-feather="users" class="nav-icon"></i>
+                            Users
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a href="{% url 'reports:report_overview' %}" class="nav-link {% if request.resolver_match.url_name == 'report_overview' %}active{% endif %}">
+                            <i data-feather="file-text" class="nav-icon"></i>
+                            Reports
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <span class="nav-link">
+                            <i data-feather="user" class="nav-icon"></i>
+                            {{ user.get_full_name|default:user.username }}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'accounts:logout' %}" class="nav-link">
+                            <i data-feather="log-out" class="nav-icon"></i>
+                            Logout
+                        </a>
+                    </li>
                 {% else %}
-                    <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+                    <li class="nav-item">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary">
+                            <i data-feather="log-in" class="btn-icon"></i>
+                            Sign In
+                        </a>
+                    </li>
                 {% endif %}
             </ul>
-        </nav>
-    </header>
+        </div>
+    </nav>
 
+    <!-- Messages -->
     {% if messages %}
         <div class="messages">
             {% for message in messages %}
-                <div class="alert {{ message.tags }}">{{ message }}</div>
+                <div class="alert alert-{{ message.tags }}" onclick="this.style.display='none'">
+                    {{ message }}
+                </div>
             {% endfor %}
         </div>
     {% endif %}
     
+    <!-- Main Content -->
     <main class="container">
         {% block content %}
         {% endblock %}
     </main>
+    
+    <!-- Footer -->
     <footer class="footer">
-        <p>&copy; 2025 Lynkevo - All Rights Reserved</p>
+        <p>&copy; 2025 Lynkevo Insights - Professional KPI Analytics Platform</p>
     </footer>
+    
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-hide messages after 5 seconds with smooth fade out
+            const messages = document.querySelectorAll('.alert');
+            messages.forEach(function(message) {
+                message.style.cursor = 'pointer';
+                message.title = 'Click to dismiss';
+                
+                setTimeout(function() {
+                    message.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateX(100%)';
+                    setTimeout(function() {
+                        if (message.parentNode) {
+                            message.remove();
+                        }
+                    }, 300);
+                }, 5000);
+            });
+            
+            // Enhanced button interactions without glitches
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                // Prevent multiple clicks during processing
+                button.addEventListener('click', function(e) {
+                    if (this.type === 'submit' && !this.disabled) {
+                        this.classList.add('loading');
+                        
+                        // Reset loading state after a reasonable timeout
+                        setTimeout(() => {
+                            this.classList.remove('loading');
+                        }, 3000);
+                    }
+                });
+            });
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // Form validation enhancement
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function() {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        submitBtn.classList.add('loading');
+                    }
+                });
+                
+                // Real-time validation feedback
+                const inputs = form.querySelectorAll('input, select, textarea');
+                inputs.forEach(input => {
+                    input.addEventListener('blur', function() {
+                        if (this.checkValidity()) {
+                            this.classList.remove('is-invalid');
+                            this.classList.add('is-valid');
+                        } else {
+                            this.classList.remove('is-valid');
+                            this.classList.add('is-invalid');
+                        }
+                    });
+                });
+            });
+            
+            // Table row hover enhancement (without flickering)
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transition = 'background-color 0.15s ease';
+                });
+            });
+            
+            // Card hover effects (performance optimized)
+            const cards = document.querySelectorAll('.card, .metric-card');
+            cards.forEach(card => {
+                card.style.willChange = 'transform, box-shadow';
+                card.addEventListener('mouseenter', function() {
+                    this.style.transition = 'all 0.2s ease';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                });
+            });
+            
+            // Keyboard navigation enhancement
+            document.addEventListener('keydown', function(e) {
+                // Escape key to close modals or alerts
+                if (e.key === 'Escape') {
+                    const alerts = document.querySelectorAll('.alert');
+                    alerts.forEach(alert => alert.remove());
+                }
+            });
+        });
+
+        // Performance optimization: Debounce search inputs
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Apply debouncing to search inputs
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInputs = document.querySelectorAll('input[name="search"]');
+            searchInputs.forEach(input => {
+                const debouncedSearch = debounce(() => {
+                    const form = input.closest('form');
+                    if (form) {
+                        form.submit();
+                    }
+                }, 300);
+                
+                input.addEventListener('input', debouncedSearch);
+            });
+        });
+        
+        // Initialize Feather Icons
+        if (typeof feather !== 'undefined') {
+            feather.replace();
+        }
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

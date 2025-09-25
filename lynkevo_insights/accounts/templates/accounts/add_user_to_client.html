@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add User to {{ client.name }} - Lynkevo Insights{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Add User to {{ client.name }}</h1>
+    <div class="page-actions">
+        <a href="{% url 'accounts:client_detail' client.pk %}" class="btn btn-secondary">
+            ← Back to Client
+        </a>
+    </div>
+</div>
+
+<div class="form-container">
+    <div class="glass-card form-card">
+        <form method="POST" class="membership-form">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors.0 }}
+                </div>
+            {% endif %}
+
+            <div class="form-section">
+                <h3 class="section-title">Team Member Assignment</h3>
+                
+                <div class="form-group">
+                    <label for="{{ form.user.id_for_label }}" class="form-label required">
+                        Select User
+                    </label>
+                    {{ form.user }}
+                    {% if form.user.errors %}
+                        <div class="field-error">{{ form.user.errors.0 }}</div>
+                    {% endif %}
+                    <small class="help-text">
+                        Choose the user account to assign to this client
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.role.id_for_label }}" class="form-label required">
+                        Role
+                    </label>
+                    {{ form.role }}
+                    {% if form.role.errors %}
+                        <div class="field-error">{{ form.role.errors.0 }}</div>
+                    {% endif %}
+                    <small class="help-text">
+                        {{ form.role.help_text }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Role Descriptions -->
+            <div class="role-descriptions">
+                <h3 class="section-title">Role Permissions</h3>
+                <div class="role-cards">
+                    <div class="role-card">
+                        <div class="role-header">
+                            <span class="role-badge role-owner">Owner</span>
+                        </div>
+                        <ul class="role-permissions">
+                            <li>Full access to client data</li>
+                            <li>Can create and edit KPI reports</li>
+                            <li>Can manage team members</li>
+                            <li>Can view all analytics</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="role-card">
+                        <div class="role-header">
+                            <span class="role-badge role-editor">Editor</span>
+                        </div>
+                        <ul class="role-permissions">
+                            <li>Can create and edit KPI reports</li>
+                            <li>Can view client data</li>
+                            <li>Can view analytics</li>
+                            <li>Cannot manage team members</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="role-card">
+                        <div class="role-header">
+                            <span class="role-badge role-viewer">Viewer</span>
+                        </div>
+                        <ul class="role-permissions">
+                            <li>Read-only access to reports</li>
+                            <li>Can view basic analytics</li>
+                            <li>Cannot create or edit data</li>
+                            <li>Cannot manage team members</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    Add Team Member
+                </button>
+                <a href="{% url 'accounts:client_detail' client.pk %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-card {
+    padding: var(--space-8);
+}
+
+.form-section {
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-group {
+    margin-bottom: var(--space-6);
+}
+
+.form-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+}
+
+.form-label.required::after {
+    content: ' *';
+    color: var(--danger-color);
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--space-4);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    background: var(--glass-bg);
+    color: var(--white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: var(--glass-backdrop);
+    -webkit-backdrop-filter: var(--glass-backdrop);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow
+
+{% endblock %}

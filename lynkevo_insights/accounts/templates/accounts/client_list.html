@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Client Management - Lynkevo Insights{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Client Management</h1>
+        <p class="page-subtitle">Manage clients and their KPI reporting access</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'accounts:client_create' %}" class="btn btn-primary">
+            Add New Client
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Dashboard -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-header">
+            <div class="metric-icon">🏢</div>
+        </div>
+        <div class="metric-value">{{ stats.total_clients }}</div>
+        <div class="metric-label">Total Clients</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-header">
+            <div class="metric-icon">✅</div>
+        </div>
+        <div class="metric-value">{{ stats.active_clients }}</div>
+        <div class="metric-label">Active Clients</div>
+        <div class="metric-change positive">With reports</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-header">
+            <div class="metric-icon">📊</div>
+        </div>
+        <div class="metric-value">{{ stats.total_reports }}</div>
+        <div class="metric-label">Total Reports</div>
+        <div class="metric-change">Across all clients</div>
+    </div>
+    
+    <div class="metric-card">
+        <div class="metric-header">
+            <div class="metric-icon">⏸️</div>
+        </div>
+        <div class="metric-value">{{ stats.inactive_clients }}</div>
+        <div class="metric-label">Inactive Clients</div>
+        <div class="metric-change">Need attention</div>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="card" style="margin-bottom: var(--space-6);">
+    <div class="card-body">
+        <form method="get">
+            <div style="display: flex; gap: var(--space-3); align-items: center;">
+                <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ search_query }}" 
+                        placeholder="Search clients by name or email..."
+                        class="form-control"
+                        autocomplete="off"
+                    >
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+                {% if search_query %}
+                <a href="{% url 'accounts:client_list' %}" class="btn btn-secondary">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Clients Grid -->
+{% if clients %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-8);">
+    {% for client in clients %}
+    <div class="card">
+        <div class="card-body">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--space-4);">
+                <h3 style="margin: 0; font-size: var(--text-xl); font-weight: 600;">
+                    {{ client.name }}
+                </h3>
+                <span class="badge badge-{% if client.reports_count > 0 %}success{% else %}secondary{% endif %}">
+                    {% if client.reports_count > 0 %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+            
+            <div style="margin-bottom: var(--space-4); color: var(--gray-600);">
+                {% if client.contact_email %}
+                <div style="margin-bottom: var(--space-2);">
+                    <strong>Email:</strong> {{ client.contact_email }}
+                </div>
+                {% endif %}
+                <div style="margin-bottom: var(--space-2);">
+                    <strong>Created:</strong> {{ client.created_at|date:"M d, Y" }}
+                </div>
+                <div>
+                    <strong>Slug:</strong> <code>{{ client.slug }}</code>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; padding: var(--space-3) 0; border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200); margin-bottom: var(--space-4);">
+                <div style="text-align: center;">
+                    <div style="font-weight: 600; font-size: var(--text-lg); color: var(--gray-800);">
+                        {{ client.reports_count }}
+                    </div>
+                    <div style="font-size: var(--text-xs); color: var(--gray-500); text-transform: uppercase;">
+                        Reports
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-weight: 600; font-size: var(--text-lg); color: var(--gray-800);">
+                        {{ client.users_count }}
+                    </div>
+                    <div style="font-size: var(--text-xs); color: var(--gray-500); text-transform: uppercase;">
+                        Users
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: var(--space-2);">
+                <a href="{% url 'accounts:client_detail' client.pk %}" class="btn btn-primary btn-sm" style="flex: 1;">
+                    View Details
+                </a>
+                <a href="{% url 'accounts:client_edit' client.pk %}" class="btn btn-secondary btn-sm">
+                    Edit
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if clients.has_other_pages %}
+<div class="pagination">
+    {% if clients.has_previous %}
+        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary btn-sm">
+            First
+        </a>
+        <a href="?page={{ clients.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary btn-sm">
+            Previous
+        </a>
+    {% endif %}
+    
+    <span class="pagination-info">
+        Page {{ clients.number }} of {{ clients.paginator.num_pages }}
+    </span>
+    
+    {% if clients.has_next %}
+        <a href="?page={{ clients.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary btn-sm">
+            Next
+        </a>
+        <a href="?page={{ clients.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}" class="btn btn-secondary btn-sm">
+            Last
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<!-- Empty State -->
+<div class="empty-state">
+    <div class="empty-state-icon">🏢</div>
+    <h3 class="empty-state-title">
+        {% if search_query %}
+            No clients found for "{{ search_query }}"
+        {% else %}
+            No clients yet
+        {% endif %}
+    </h3>
+    <p class="empty-state-text">
+        {% if search_query %}
+            Try adjusting your search terms or create a new client.
+        {% else %}
+            Get started by creating your first client to begin tracking KPIs.
+        {% endif %}
+    </p>
+    <a href="{% url 'accounts:client_create' %}" class="btn btn-primary">
+        Create First Client
+    </a>
+</div>
+{% endif %}
+
+<style>
+/* Responsive grid adjustments */
+@media (max-width: 768px) {
+    div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+{% endblock %}

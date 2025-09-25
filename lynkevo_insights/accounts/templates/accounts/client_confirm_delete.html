@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete {{ client.name }} - Confirmation{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Delete Client</h1>
+    <div class="page-actions">
+        <a href="{% url 'accounts:client_detail' client.pk %}" class="btn btn-secondary">
+            ← Cancel
+        </a>
+    </div>
+</div>
+
+<div class="form-container">
+    <div class="glass-card danger-card">
+        <div class="danger-header">
+            <div class="danger-icon">⚠️</div>
+            <h2>Confirm Client Deletion</h2>
+        </div>
+        
+        <div class="deletion-warning">
+            <p>You are about to permanently delete the following client:</p>
+            
+            <div class="client-summary">
+                <h3>{{ client.name }}</h3>
+                <div class="client-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Contact Email:</span>
+                        <span class="detail-value">{{ client.contact_email|default:"Not provided" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Created:</span>
+                        <span class="detail-value">{{ client.created_at|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">KPI Reports:</span>
+                        <span class="detail-value">{{ client.kpi_reports.count }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Team Members:</span>
+                        <span class="detail-value">{{ client.memberships.count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="consequences">
+            <h4>This action will permanently:</h4>
+            <ul class="consequences-list">
+                <li>Delete all KPI reports for this client</li>
+                <li>Remove all team member assignments</li>
+                <li>Remove all historical data</li>
+                <li>Cannot be undone</li>
+            </ul>
+        </div>
+        
+        <form method="POST" class="deletion-form">
+            {% csrf_token %}
+            
+            <div class="confirmation-input">
+                <label for="confirm-deletion">Type the client name to confirm deletion:</label>
+                <input 
+                    type="text" 
+                    id="confirm-deletion" 
+                    name="confirmation" 
+                    placeholder="Enter client name exactly as shown above"
+                    class="form-control"
+                    required
+                >
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-danger btn-lg" id="delete-btn" disabled>
+                    🗑️ Delete Client Permanently
+                </button>
+                <a href="{% url 'accounts:client_detail' client.pk %}" class="btn btn-secondary btn-lg">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.danger-card {
+    border: 2px solid rgba(250, 112, 154, 0.3);
+    background: rgba(250, 112, 154, 0.05);
+}
+
+.danger-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid rgba(250, 112, 154, 0.2);
+}
+
+.danger-icon {
+    font-size: 3rem;
+    margin-bottom: var(--space-3);
+}
+
+.danger-header h2 {
+    margin: 0;
+    color: var(--danger-color);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.deletion-warning {
+    margin-bottom: var(--space-6);
+}
+
+.deletion-warning p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    margin-bottom: var(--space-4);
+}
+
+.client-summary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    margin-bottom: var(--space-6);
+}
+
+.client-summary h3 {
+    margin: 0 0 var(--space-4) 0;
+    color: var(--white);
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.client-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+}
+
+.detail-value {
+    color: var(--white);
+    font-weight: 600;
+}
+
+.consequences {
+    margin-bottom: var(--space-6);
+    padding: var(--space-4);
+    background: rgba(250, 112, 154, 0.1);
+    border: 1px solid rgba(250, 112, 154, 0.2);
+    border-radius: var(--radius);
+}
+
+.consequences h4 {
+    margin: 0 0 var(--space-3) 0;
+    color: var(--danger-color);
+    font-size: 1rem;
+}
+
+.consequences-list {
+    margin: 0;
+    padding-left: var(--space-5);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.consequences-list li {
+    margin-bottom: var(--space-2);
+    line-height: 1.4;
+}
+
+.confirmation-input {
+    margin-bottom: var(--space-6);
+}
+
+.confirmation-input label {
+    display: block;
+    margin-bottom: var(--space-2);
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--space-4);
+    border: 2px solid rgba(250, 112, 154, 0.3);
+    border-radius: var(--radius-lg);
+    background: var(--glass-bg);
+    color: var(--white);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--danger-color);
+    box-shadow: 0 0 0 4px rgba(250, 112, 154, 0.2);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+}
+
+.btn-danger {
+    background: var(--gradient-danger);
+    color: var(--white);
+    border: none;
+}
+
+.btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-danger:not(:disabled):hover {
+    background: linear-gradient(135deg, #e91e63 0%, #ff5722 100%);
+}
+
+@media (max-width: 768px) {
+    .client-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmInput = document.getElementById('confirm-deletion');
+    const deleteBtn = document.getElementById('delete-btn');
+    const clientName = "{{ client.name }}";
+    
+    confirmInput.addEventListener('input', function() {
+        if (this.value.trim() === clientName) {
+            deleteBtn.disabled = false;
+            deleteBtn.classList.add('confirmed');
+        } else {
+            deleteBtn.disabled = true;
+            deleteBtn.classList.remove('confirmed');
+        }
+    });
+    
+    // Extra confirmation on form submit
+    document.querySelector('.deletion-form').addEventListener('submit', function(e) {
+        if (!confirm('Are you absolutely sure you want to delete this client? This action cannot be undone!')) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}
